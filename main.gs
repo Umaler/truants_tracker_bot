@@ -8,7 +8,7 @@ function getScriptSecret(key) {
 const API=getScriptSecret('bot_token')  // Токен телеграм-бота
 const GROUP_CHAT_ID=getScriptSecret('group_chat_id')   // ID чата, где всех пинговать
 const DEBUG_CHAT_ID=getScriptSecret('debug_chat_id')   // ID чата, куда писать дебаг сообщения
-const APP_LINK="https://script.google.com/macros/s/AKfycbyXYp7Zxesd0H9sySI5dIT5XKXftzGSSuiSmgDeQhvDGkabqUNZQxAiCj8bCalNMz6ETg/exec"
+const APP_LINK="https://script.google.com/macros/s/AKfycbzWbGZDwygwIQer2kc1AztTvwdKMea94eGtnCJqy0gMP52Tck7RW4B4cx5--payGnt3Ng/exec"
 const SPREADSHEAT_URL=getScriptSecret('spreadsheet_document')
 
 const DATE_COLUMN=1
@@ -241,7 +241,7 @@ function getNameById(id) {
   const ids = sheet.getDataRange().getValues()
 
   for(let i = 0; i < ids.length; i++) {
-    if(String(ids[i][0]) == id) {
+    if(String(ids[i][0]) == String(id)) {
       return String(ids[i][1])
     }
   }
@@ -338,14 +338,14 @@ function ping_people(days_offset) {
   }
 
   const dont_knows_n = stats['unknown']
-  const dont_knows = Object.assign({}, partials, get_ids_by_status(null));
+  const dont_knows = partials.concat(get_ids_by_status(null));
   if(dont_knows_n >= REQUIRED_PEOPLE) {
     const ping_msg = make_ping_msg(`Оповещение о: ${when}.\nСлишком много тех, кто будет частично и не определились. Отметьтесь и договоритесь, чтобы на всех парах было достаточное количество людей.`, dont_knows)
     send(ping_msg, GROUP_CHAT_ID)
     return
   }
 
-  const wont_be = Object.assign({}, dont_knows, get_ids_by_status(WONT_BE_STATUS));
+  const wont_be = dont_knows.concat(get_ids_by_status(WONT_BE_STATUS));
   const ping_msg = make_ping_msg(`Оповещение о: ${when}.\nЛюдей слишком мало!!! Слишком много тех, кого точно не будет!!! Отметьтесь, договоритесь!!!`, wont_be)
   send(ping_msg, GROUP_CHAT_ID)
 }
@@ -392,6 +392,10 @@ function doPost(e) {
       const chat_id = msg.chat.id;
       const text = msg.text;
       const userId = msg.from.id;
+
+      if(!msg.hasOwnProperty(text)) {
+        return
+      }
 
       const msg_parts = text.split('@')
       if(!(msg_parts.length == 1) && !((msg_parts.length == 2) && (msg_parts[1] == 'truants_tracker_bot'))) {
@@ -468,5 +472,6 @@ function api_connector () {
 }
 
 function main() {
-  
+  //send('ABOBA', GROUP_CHAT_ID)
+  trigger_wakeup()
 }
