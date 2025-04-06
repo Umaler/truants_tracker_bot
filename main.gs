@@ -8,7 +8,7 @@ function getScriptSecret(key) {
 const API=getScriptSecret('bot_token')  // Токен телеграм-бота
 const GROUP_CHAT_ID=getScriptSecret('group_chat_id')   // ID чата, где всех пинговать
 const DEBUG_CHAT_ID=getScriptSecret('debug_chat_id')   // ID чата, куда писать дебаг сообщения
-const APP_LINK="https://script.google.com/macros/s/AKfycbzWbGZDwygwIQer2kc1AztTvwdKMea94eGtnCJqy0gMP52Tck7RW4B4cx5--payGnt3Ng/exec"
+const APP_LINK="https://script.google.com/macros/s/AKfycbzEiTVsW5s9RmbOoUA_hyxwXgeqdrL4nouSa-AiI0Pnm8KVc97cUOHk6pOBuQNfRnGUgA/exec"
 const SPREADSHEAT_URL=getScriptSecret('spreadsheet_document')
 
 const DATE_COLUMN=1
@@ -54,7 +54,7 @@ function send (msg, chat_id, keyboard=null) {
       'method': 'sendMessage',
       'chat_id': String(chat_id),
       'text': String(msg),
-      'parse_mode': 'Markdown'
+      'parse_mode': 'HTML'
     }
   }
   else {
@@ -62,7 +62,7 @@ function send (msg, chat_id, keyboard=null) {
       'method': 'sendMessage',
       'chat_id': String(chat_id),
       'text': String(msg),
-      'parse_mode': 'Markdown',
+      'parse_mode': 'HTML',
       'reply_markup': JSON.stringify(keyboard)
     }
   }
@@ -319,7 +319,9 @@ function ping_people(days_offset) {
   function make_ping_msg(prefix, to_ping_ids) {
     let result = String(prefix)
     for(const id of to_ping_ids) {
-      result += `\n[${getNameById(id)}](tg://user?id=${id})`
+      //<a href="tg://user?id=123456789">inline mention of a user</a>
+      //result += `\n[${getNameById(id)}](tg://user?id=${id})`
+      result += `<a href="tg://user?id=${id}">${getNameById(id)}</a>`
     }
     return result
   }
@@ -390,12 +392,12 @@ function doPost(e) {
     try {
       const msg = update.message;
       const chat_id = msg.chat.id;
-      const text = msg.text;
       const userId = msg.from.id;
 
-      if(!msg.hasOwnProperty(text)) {
+      if(!msg.hasOwnProperty('text')) {
         return
       }
+      const text = msg.text;
 
       const msg_parts = text.split('@')
       if(!(msg_parts.length == 1) && !((msg_parts.length == 2) && (msg_parts[1] == 'truants_tracker_bot'))) {
@@ -472,6 +474,5 @@ function api_connector () {
 }
 
 function main() {
-  //send('ABOBA', GROUP_CHAT_ID)
-  trigger_wakeup()
+
 }
