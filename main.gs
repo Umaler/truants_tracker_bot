@@ -8,7 +8,7 @@ function getScriptSecret(key) {
 const API=getScriptSecret('bot_token')  // Токен телеграм-бота
 const GROUP_CHAT_ID=getScriptSecret('group_chat_id')   // ID чата, где всех пинговать
 const DEBUG_CHAT_ID=getScriptSecret('debug_chat_id')   // ID чата, куда писать дебаг сообщения
-const APP_LINK="https://script.google.com/macros/s/AKfycbw0J7IH4mLaG23hoxMfWblPM1USl74AoJ8OzxKVqCjCkSDrjvCojCluEzjGtgOWN-W2OA/exec"
+const APP_LINK="https://script.google.com/macros/s/AKfycbw07DaC6YPo2xdVUWbL3FOXk6HRaB8SwENJDmf-hXp4C2X86kbjw3KTdV1SA8F2BgG3kA/exec"
 const SPREADSHEAT_URL=getScriptSecret('spreadsheet_document')
 
 const DATE_COLUMN=1
@@ -389,6 +389,10 @@ function isRegistredUser(id) {
 }
 
 function doPost(e) {
+  function unknownUserAnswer(userId) {
+    return `Кто ты, <a href="tg://user?id=${userId}">user</a>?`
+  }
+
   const update = JSON.parse(e.postData.contents);
   if (update.hasOwnProperty('message')) {
     try {
@@ -410,7 +414,7 @@ function doPost(e) {
       switch(command) {
         case "/my_status":
           if(!isRegistredUser(userId)) {
-            send('А ты кто?', chat_id)
+            send(unknownUserAnswer(userId), chat_id)
           }
           else {
             restext = "Сегодня: " + getUserStatus(userId, 0) + "\nЗавтра: " + getUserStatus(userId, 1)
@@ -436,7 +440,7 @@ function doPost(e) {
 
         case "/set_status_today":
           if(!isRegistredUser(userId)) {
-            send('А ты кто?', chat_id)
+            send(unknownUserAnswer(userId), chat_id)
           }
           else {
             send("Выберите статус на сегодня", chat_id, addPrefixesToKeyboard(set_status_keyboard, "ssn_"))
@@ -445,7 +449,7 @@ function doPost(e) {
 
         case "/set_status_tomorrow":
           if(!isRegistredUser(userId)) {
-            send('А ты кто?', chat_id)
+            send(unknownUserAnswer(userId), chat_id)
           }
           else {
             send("Выберите статус на завтра", chat_id, addPrefixesToKeyboard(set_status_keyboard, "sst_"))
@@ -468,7 +472,7 @@ function doPost(e) {
       const value  = receivedData.substring(4)
 
       if(!isRegistredUser(userId)) {
-        send(`Кто ты, <a href="tg://user?id=${userId}">user</a>?`, chatId)
+        send(unknownUserAnswer(userId), chatId)
       }
 
       switch(prefix) {
