@@ -8,7 +8,7 @@ function getScriptSecret(key) {
 const API=getScriptSecret('bot_token')  // Токен телеграм-бота
 const GROUP_CHAT_ID=getScriptSecret('group_chat_id')   // ID чата, где всех пинговать
 const DEBUG_CHAT_ID=getScriptSecret('debug_chat_id')   // ID чата, куда писать дебаг сообщения
-const APP_LINK="https://script.google.com/macros/s/AKfycbzEiTVsW5s9RmbOoUA_hyxwXgeqdrL4nouSa-AiI0Pnm8KVc97cUOHk6pOBuQNfRnGUgA/exec"
+const APP_LINK="https://script.google.com/macros/s/AKfycbw0J7IH4mLaG23hoxMfWblPM1USl74AoJ8OzxKVqCjCkSDrjvCojCluEzjGtgOWN-W2OA/exec"
 const SPREADSHEAT_URL=getScriptSecret('spreadsheet_document')
 
 const DATE_COLUMN=1
@@ -319,8 +319,6 @@ function ping_people(days_offset) {
   function make_ping_msg(prefix, to_ping_ids) {
     let result = String(prefix)
     for(const id of to_ping_ids) {
-      //<a href="tg://user?id=123456789">inline mention of a user</a>
-      //result += `\n[${getNameById(id)}](tg://user?id=${id})`
       result += `<a href="tg://user?id=${id}">${getNameById(id)}</a>`
     }
     return result
@@ -386,6 +384,10 @@ function doGet(e) {
   return HtmlService.createHtmlOutput(params);
 }
 
+function isRegistredUser(id) {
+  return !(getNameById(id) === null)
+}
+
 function doPost(e) {
   const update = JSON.parse(e.postData.contents);
   if (update.hasOwnProperty('message')) {
@@ -407,8 +409,13 @@ function doPost(e) {
 
       switch(command) {
         case "/my_status":
-          restext = "Сегодня: " + getUserStatus(userId, 0) + "\nЗавтра: " + getUserStatus(userId, 1)
-          send(restext, chat_id)
+          if(!isRegistredUser(userId)) {
+            send('А ты кто?', chat_id)
+          }
+          else {
+            restext = "Сегодня: " + getUserStatus(userId, 0) + "\nЗавтра: " + getUserStatus(userId, 1)
+            send(restext, chat_id)
+          }
           break
 
         case "/get_today_numbers":
@@ -428,11 +435,21 @@ function doPost(e) {
           break
 
         case "/set_status_today":
-          send("Выберите статус на сегодня", chat_id, addPrefixesToKeyboard(set_status_keyboard, "ssn_"))
+          if(!isRegistredUser(userId)) {
+            send('А ты кто?', chat_id)
+          }
+          else {
+            send("Выберите статус на сегодня", chat_id, addPrefixesToKeyboard(set_status_keyboard, "ssn_"))
+          }
           break
 
         case "/set_status_tomorrow":
-          send("Выберите статус на завтра", chat_id, addPrefixesToKeyboard(set_status_keyboard, "sst_"))
+          if(!isRegistredUser(userId)) {
+            send('А ты кто?', chat_id)
+          }
+          else {
+            send("Выберите статус на завтра", chat_id, addPrefixesToKeyboard(set_status_keyboard, "sst_"))
+          }
           break
       }
     }
@@ -449,6 +466,10 @@ function doPost(e) {
 
       const prefix = receivedData.substring(0, 4)
       const value  = receivedData.substring(4)
+
+      if(!isRegistredUser(userId)) {
+        send(`Кто ты, <a href="tg://user?id=${userId}">user</a>?`, chatId)
+      }
 
       switch(prefix) {
         case "ssn_":
